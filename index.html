@@ -1,0 +1,2431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vegetable Oil Export Analysis - Strategic Investment Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #0F172A;
+            --primary-light: #1E293B;
+            --secondary: #3B82F6;
+            --accent: #F59E0B;
+            --accent-light: #FCD34D;
+            --teal: #14B8A6;
+            --coral: #FB923C;
+            --bg-primary: #F8FAFC;
+            --bg-secondary: #F1F5F9;
+            --bg-card: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --text-muted: #94A3B8;
+            --border: #E2E8F0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        /* App Container */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Top Navigation */
+        .top-nav {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+        
+        .nav-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--secondary), var(--teal));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 18px;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 400;
+        }
+        
+        /* Horizontal Tab Navigation */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            padding: 8px 32px 0 32px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .tabs::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tab {
+            padding: 16px 24px;
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+        }
+        
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+        
+        .tab.active {
+            color: var(--secondary);
+            border-bottom-color: var(--secondary);
+            background: transparent;
+            font-weight: 600;
+        }
+        
+        .tab-icon {
+            font-size: 18px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            background: var(--bg-primary);
+        }
+        
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Page Header */
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .page-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+        
+        .stat-change {
+            font-size: 13px;
+            margin-top: 8px;
+            color: var(--teal);
+            font-weight: 600;
+        }
+        
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .card-header {
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+        
+        .card-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 24px 0;
+        }
+        
+        .info-box.warning {
+            background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+            border-left-color: var(--accent);
+        }
+        
+        .info-box.success {
+            background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+            border-left-color: var(--teal);
+        }
+        
+        .info-box.danger {
+            background: linear-gradient(135deg, #FEE2E2, #FECACA);
+            border-left-color: var(--coral);
+        }
+        
+        .info-box-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .info-box ul {
+            margin: 12px 0;
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin: 6px 0;
+            color: var(--text-primary);
+        }
+        
+        /* Country Grid */
+        .country-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        
+        .country-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .country-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--secondary);
+        }
+        
+        .country-rank {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 18px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+        
+        .country-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .country-rating {
+            font-size: 20px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+        
+        .country-highlight {
+            background: var(--bg-secondary);
+            padding: 14px;
+            border-radius: 8px;
+            margin: 14px 0;
+            border-left: 3px solid var(--secondary);
+        }
+        
+        .country-highlight strong {
+            display: block;
+            color: var(--primary);
+            font-size: 13px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .country-risk {
+            color: var(--coral);
+            font-size: 13px;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+        
+        .country-details {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        
+        .detail-value {
+            color: var(--primary);
+            font-weight: 500;
+            text-align: right;
+        }
+        
+        /* Map Container */
+        .map-container {
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 24px 0;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+        
+        /* Data Table */
+        .data-table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            margin: 24px 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+        
+        .data-table thead {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        }
+        
+        .data-table th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 13px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        
+        .data-table tbody tr {
+            transition: background 0.2s;
+        }
+        
+        .data-table tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+        
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Comparison Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+        
+        .comparison-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .comparison-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--secondary);
+        }
+        
+        /* Chart Container */
+        .chart-container {
+            background: var(--bg-card);
+            padding: 28px;
+            border-radius: 12px;
+            margin: 24px 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        .badge-success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .badge-warning {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .badge-danger {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .badge-info {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+        
+        /* Production Matrix */
+        .production-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .production-item {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        
+        .production-item h4 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .production-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 6px;
+        }
+        
+        .production-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .country-grid, .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-header {
+                padding: 12px 20px;
+            }
+            
+            .tabs {
+                padding: 0 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 16px;
+            }
+            
+            .tabs {
+                width: 100%;
+                padding: 0 16px 12px 16px;
+                gap: 4px;
+            }
+            
+            .tab {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            
+            .tab-icon {
+                font-size: 16px;
+            }
+            
+            .content-wrapper {
+                padding: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <div class="nav-header">
+                <div class="logo">
+                    <div class="logo-icon">VO</div>
+                    <div>
+                        <div>Investment Analysis</div>
+                        <div class="subtitle">Strategic Market Intelligence</div>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="tabs">
+                <div class="tab active" data-tab="overview">
+                    <span class="tab-icon">📊</span>
+                    Overview
+                </div>
+                <div class="tab" data-tab="section1">
+                    <span class="tab-icon">📍</span>
+                    Optimal Locations
+                </div>
+                <div class="tab" data-tab="section2">
+                    <span class="tab-icon">🌾</span>
+                    Oilseed Production
+                </div>
+                <div class="tab" data-tab="section3">
+                    <span class="tab-icon">🏭</span>
+                    Ethiopia & Kazakhstan
+                </div>
+                <div class="tab" data-tab="section4">
+                    <span class="tab-icon">🇮🇳</span>
+                    India Market
+                </div>
+                <div class="tab" data-tab="conclusion">
+                    <span class="tab-icon">✅</span>
+                    Conclusion
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                
+                <!-- OVERVIEW TAB -->
+                <div class="tab-content active" id="overview">
+                    <div class="page-header">
+                        <h1 class="page-title">Vegetable Oil Export Analysis</h1>
+                        <p class="page-description">Comprehensive strategic investment analysis for India's $18.3 billion edible oil import market</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Annual Import Volume</div>
+                            <div class="stat-value">16M</div>
+                            <div class="stat-change">Tonnes per year</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Market Value</div>
+                            <div class="stat-value">$18.3B</div>
+                            <div class="stat-change">Total annual imports</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Import Dependency</div>
+                            <div class="stat-value">55-60%</div>
+                            <div class="stat-change">Of domestic consumption</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Viable Export Oils</div>
+                            <div class="stat-value">2</div>
+                            <div class="stat-change">Soybean & Sunflower only</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Executive Summary</h2>
+                            <p class="card-subtitle">Key findings across four comprehensive sections</p>
+                        </div>
+                        
+                        <div class="info-box success">
+                            <div class="info-box-title">Section 1: Optimal Location Analysis</div>
+                            <p><strong>Top Recommendation:</strong> Nepal offers maximum tariff advantage (zero-duty SAFTA access) but faces increasing regulatory scrutiny. Tanzania provides the best balance of stability, sunflower production (480,000+ MT), and long-term sustainability.</p>
+                            <ul>
+                                <li>7 countries evaluated: Nepal, Tanzania, Thailand, Kazakhstan, Vietnam, Ghana, Uzbekistan</li>
+                                <li>Critical factors: oilseed availability, logistics, political stability, labor costs, electricity, trade agreements</li>
+                                <li>Investment range: $180,000-$630,000 depending on capacity and location</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-box">
+                            <div class="info-box-title">Section 2: Global Oilseed Production</div>
+                            <p><strong>Key Finding:</strong> Massive yield gaps (100-276%) represent untapped investment opportunities across Africa and Central Asia.</p>
+                            <ul>
+                                <li><strong>Soybean:</strong> South America dominates (Brazil 163M MT, Argentina 48M MT)</li>
+                                <li><strong>Sunflower:</strong> Tanzania offers dual-season advantage; Kazakhstan 48.4% production surge</li>
+                                <li><strong>Cottonseed:</strong> West Africa "Cotton Four" offers 1.3M+ MT surplus</li>
+                                <li><strong>Groundnut:</strong> Limited import rationale (India is net exporter)</li>
+                                <li><strong>Sesame:</strong> Sudan collapse (1.37M → 300K MT) reshapes market; Ethiopia premium quality</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-box success">
+                            <div class="info-box-title">Section 3: Ethiopia & Kazakhstan Investment Analysis</div>
+                            <p><strong>Top 2 Locations:</strong> Ethiopia optimal for sesame oil (13% margin), Kazakhstan optimal for sunflower oil (16% margin).</p>
+                            <ul>
+                                <li><strong>Ethiopia:</strong> $0.03/kWh electricity, $909/year labor, 300K-350K tons sesame, 20-30% IRR</li>
+                                <li><strong>Kazakhstan:</strong> 3.2M tons capacity with <50% utilization, INSTC corridor (30-40% faster than Suez)</li>
+                                <li><strong>Critical:</strong> Focus on crude oil (19.25% tariff differential favoring crude vs refined)</li>
+                                <li>Corrected economics show 13-16% margins using local seed procurement</li>
+                            </ul>
+                        </div>
+
+                        <div class="info-box danger">
+                            <div class="info-box-title">Section 4: India Import Market - Critical Findings</div>
+                            <p><strong>Only 2 Viable Oils:</strong> Soybean and sunflower oils present realistic export opportunities. Cottonseed, groundnut, and sesame have ZERO import demand.</p>
+                            <ul>
+                                <li><strong>Soybean oil:</strong> 5.47M tonnes (2024-25 record high, +36% YoY growth)</li>
+                                <li><strong>Sunflower oil:</strong> 2.6-3.0M tonnes, 97% import dependent</li>
+                                <li>Argentina 53% soybean share; Russia 56% sunflower share (post-2022 surge)</li>
+                                <li>India's structural 55% import dependence ensures sustained demand through 2030</li>
+                                <li>Current tariffs: 16.5% crude oils, 35.75% refined oils (volatile policy)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Strategic Recommendations</h2>
+                            <p class="card-subtitle">Action plan for optimal market entry</p>
+                        </div>
+
+                        <div class="comparison-grid">
+                            <div class="comparison-card">
+                                <h3>Scenario 1: Sesame Oil (Ethiopia)</h3>
+                                <div class="detail-row">
+                                    <span class="detail-label">Location</span>
+                                    <span class="detail-value">Adama or Modjo Industrial Park</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Investment</span>
+                                    <span class="detail-value">$250,000-400,000</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Capacity</span>
+                                    <span class="detail-value">20-30 tons seeds/day</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Primary Market</span>
+                                    <span class="detail-value">South Korea, Japan, China</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Expected Return</span>
+                                    <span class="detail-value"><strong style="color: var(--teal);">20-30% IRR</strong></span>
+                                </div>
+                            </div>
+
+                            <div class="comparison-card">
+                                <h3>Scenario 2: Sunflower Oil (Kazakhstan)</h3>
+                                <div class="detail-row">
+                                    <span class="detail-label">Location</span>
+                                    <span class="detail-value">East Kazakhstan (near fields)</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Investment</span>
+                                    <span class="detail-value">$400,000-600,000</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Capacity</span>
+                                    <span class="detail-value">50-100 tons seeds/day</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Primary Market</span>
+                                    <span class="detail-value">India (via INSTC)</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Expected Return</span>
+                                    <span class="detail-value"><strong style="color: var(--teal);">15-25% IRR</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 1: OPTIMAL LOCATIONS -->
+                <div class="tab-content" id="section1">
+                    <div class="page-header">
+                        <h1 class="page-title">Optimal Production Locations</h1>
+                        <p class="page-description">Strategic analysis of 7 countries for edible oil export to India</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Countries Evaluated</div>
+                            <div class="stat-value">7</div>
+                            <div class="stat-change">From 25+ initial candidates</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Critical Factors</div>
+                            <div class="stat-value">7</div>
+                            <div class="stat-change">Decision criteria</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Transit Time Range</div>
+                            <div class="stat-value">2-35</div>
+                            <div class="stat-change">Days to India</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Investment Range</div>
+                            <div class="stat-value">$180K-630K</div>
+                            <div class="stat-change">Depending on scale</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Global Investment Map</h2>
+                            <p class="card-subtitle">Trade routes and distances to India from optimal locations</p>
+                        </div>
+                        <div class="map-container">
+                            <div id="map1" style="width: 100%; height: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Top 7 Countries Ranked</h2>
+                            <p class="card-subtitle">Comprehensive evaluation of investment opportunities</p>
+                        </div>
+
+                        <div class="country-grid">
+                            <div class="country-card">
+                                <div class="country-rank">1</div>
+                                <h3 class="country-name">🇳🇵 Nepal</h3>
+                                <div class="country-rating">★★★★☆</div>
+                                <div class="country-highlight">
+                                    <strong>Key Advantage</strong>
+                                    Zero-duty SAFTA access to India
+                                </div>
+                                <p class="country-risk">⚠️ Risk: Increasing regulatory scrutiny</p>
+                                <div class="country-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Labor Cost</span>
+                                        <span class="detail-value">$100-150/month</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Electricity</span>
+                                        <span class="detail-value">$0.10/kWh</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Transit to India</span>
+                                        <span class="detail-value">2-5 days (land)</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Ease of Business</span>
+                                        <span class="detail-value">Rank 94/190</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="country-card">
+                                <div class="country-rank">2</div>
+                                <h3 class="country-name">🇹🇿 Tanzania</h3>
+                                <div class="country-rating">★★★★☆</div>
+                                <div class="country-highlight">
+                                    <strong>Key Advantage</strong>
+                                    #1 African sunflower producer + political stability
+                                </div>
+                                <p class="country-risk">⚠️ Risk: Distance (8-9 days transit)</p>
+                                <div class="country-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Labor Cost</span>
+                                        <span class="detail-value">$54-228/month</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Electricity</span>
+                                        <span class="detail-value">$0.06-0.087/kWh</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Sunflower Production</span>
+                                        <span class="detail-value">480,000+ MT/year</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">FDI Growth</span>
+                                        <span class="detail-value">28.3% (2024)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="country-card">
+                                <div class="country-rank">3</div>
+                                <h3 class="country-name">🇹🇭 Thailand</h3>
+                                <div class="country-rating">★★★★☆</div>
+                                <div class="country-highlight">
+                                    <strong>Key Advantage</strong>
+                                    Best infrastructure + ASEAN-India FTA
+                                </div>
+                                <p class="country-risk">⚠️ Risk: Limited oilseed production</p>
+                                <div class="country-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Labor Cost</span>
+                                        <span class="detail-value">$270-300/month</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Transit to India</span>
+                                        <span class="detail-value">5-10 days</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Ease of Business</span>
+                                        <span class="detail-value">Rank 21/190</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Trade Agreement</span>
+                                        <span class="detail-value">90% tariff liberalization</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="country-card">
+                                <div class="country-rank">4</div>
+                                <h3 class="country-name">🇰🇿 Kazakhstan</h3>
+                                <div class="country-rating">★★★★☆</div>
+                                <div class="country-highlight">
+                                    <strong>Key Advantage</strong>
+                                    2.2M MT sunflower + INSTC corridor
+                                </div>
+                                <p class="country-risk">⚠️ Risk: Higher labor costs</p>
+                                <div class="country-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Labor Cost</span>
+                                        <span class="detail-value">$600-800/month</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Electricity</span>
+                                        <span class="detail-value">$0.05-0.07/kWh</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Sunflower Production</span>
+                                        <span class="detail-value">2.2M MT (2024 record)</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Ease of Business</span>
+                                        <span class="detail-value">Rank 25/190</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="country-card">
+                                <div class="country-rank">5</div>
+                                <h3 class="country-name">🇻🇳 Vietnam</h3>
+                                <div class="country-rating">★★★½☆</div>
+                                <div class="country-highlight">
+                                    <strong>Key Advantage</strong>
+                                    Low electricity + large SEZ network
+                                </div>
+                                <p class="country-risk">⚠️ Risk: Must import all oilseeds</p>
+                                <div class="country-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Labor Cost</span>
+                                        <span class="detail-value">$180-250/month</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Electricity</span>
+                                        <span class="detail-value">$0.07-0.08/kWh</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Transit to India</span>
+                                        <span class="detail-value">7-12 days</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="country-card">
+                                <div class="country-rank">6</div>
+                                <h3 class="country-name">🇬🇭 Ghana</h3>
+                                <div class="country-rating">★★★☆☆</div>
+                                <div class="country-highlight">
+                                    <strong>Key Advantage</strong>
+                                    Best stability in Africa + groundnut base
+                                </div>
+                                <p class="country-risk">⚠️ Risk: 25-35 days shipping</p>
+                                <div class="country-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Labor Cost</span>
+                                        <span class="detail-value">$100-180/month</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Transit to India</span>
+                                        <span class="detail-value">25-35 days</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="country-card">
+                                <div class="country-rank">7</div>
+                                <h3 class="country-name">🇺🇿 Uzbekistan</h3>
+                                <div class="country-rating">★★★☆☆</div>
+                                <div class="country-highlight">
+                                    <strong>Key Advantage</strong>
+                                    1.8M MT cottonseed + lowest electricity
+                                </div>
+                                <p class="country-risk">⚠️ Risk: Logistics via Iran</p>
+                                <div class="country-details">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Electricity</span>
+                                        <span class="detail-value">$0.03-0.05/kWh</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Cottonseed</span>
+                                        <span class="detail-value">640,000 MT</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box warning">
+                        <div class="info-box-title">⚠️ Nepal Critical Warning</div>
+                        <p>India is actively tightening oversight of Nepal's duty-free access. March 2025 amendments require stricter Proof of Origin documentation. June 2025 saw India halve crude oil duties to 10%, significantly reducing Nepal's competitive advantage. The Indian Solvent Extractors' Association lobbies for further restrictions, arguing repackaging without genuine 30% value addition violates SAFTA rules.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Comparative Analysis Matrix</h2>
+                        </div>
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Factor</th>
+                                        <th>Nepal</th>
+                                        <th>Tanzania</th>
+                                        <th>Thailand</th>
+                                        <th>Kazakhstan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Tariff Advantage</strong></td>
+                                        <td>Maximum (0% SAFTA)</td>
+                                        <td>Standard (27.5-35.75%)</td>
+                                        <td>90% liberalization</td>
+                                        <td>MFN rates</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Raw Material</strong></td>
+                                        <td>Import-dependent</td>
+                                        <td>Sunflower + Sesame local</td>
+                                        <td>Import from Myanmar/Brazil</td>
+                                        <td>Sunflower local</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Infrastructure</strong></td>
+                                        <td>Improving</td>
+                                        <td>Adequate (Dar es Salaam)</td>
+                                        <td>Excellent (Laem Chabang)</td>
+                                        <td>Good (INSTC corridor)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Investment Climate</strong></td>
+                                        <td>High risk, high reward</td>
+                                        <td>Stable long-term</td>
+                                        <td>Best regulatory environment</td>
+                                        <td>Improving, WTO member</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total Investment</strong></td>
+                                        <td>$200,000-400,000</td>
+                                        <td>$300,000-500,000</td>
+                                        <td>$400,000-700,000</td>
+                                        <td>$400,000-600,000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: OILSEED PRODUCTION -->
+                <div class="tab-content" id="section2">
+                    <div class="page-header">
+                        <h1 class="page-title">Global Oilseed Production</h1>
+                        <p class="page-description">Comprehensive sourcing analysis across 5 key crops</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Oilseeds Analyzed</div>
+                            <div class="stat-value">5</div>
+                            <div class="stat-change">Soybean, Sunflower, Cottonseed, Groundnut, Sesame</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Yield Gap Potential</div>
+                            <div class="stat-value">100-276%</div>
+                            <div class="stat-change">Improvement opportunity</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Africa Uncultivated Land</div>
+                            <div class="stat-value">445M</div>
+                            <div class="stat-change">Hectares (65% of continent)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Countries Analyzed</div>
+                            <div class="stat-value">25+</div>
+                            <div class="stat-change">Production centers evaluated</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Global Production Centers</h2>
+                            <p class="card-subtitle">Major producing regions with export potential to India</p>
+                        </div>
+                        <div class="map-container">
+                            <div id="map2" style="width: 100%; height: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">🌱 Soybean: South American Dominance</h2>
+                            <p class="card-subtitle">Brazil and USA produce 70% of global soybeans</p>
+                        </div>
+
+                        <div class="info-box success">
+                            <div class="info-box-title">Key Finding</div>
+                            <p>Brazil (163M MT) and USA (112.4M MT) produce 70% of global soybeans. Argentina's recovery to 48-49M MT (+96% from 2022/23 drought) restores "Big Three" dominance. South America is the only viable large-scale sourcing region.</p>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Country</th>
+                                        <th>Production (MT)</th>
+                                        <th>Export Surplus</th>
+                                        <th>Viability</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>🇧🇷 Brazil</td>
+                                        <td>163,000,000</td>
+                                        <td>92+ million MT</td>
+                                        <td><span class="badge badge-success">HIGH</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>🇺🇸 United States</td>
+                                        <td>112,400,000</td>
+                                        <td>48+ million MT</td>
+                                        <td><span class="badge badge-success">HIGH</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>🇦🇷 Argentina</td>
+                                        <td>48,000,000</td>
+                                        <td>7 million MT beans</td>
+                                        <td><span class="badge badge-success">HIGH</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>6</td>
+                                        <td>🇵🇾 Paraguay</td>
+                                        <td>10,500,000</td>
+                                        <td>8.8 million MT</td>
+                                        <td><span class="badge badge-success">HIGH</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>12</td>
+                                        <td>🇿🇦 South Africa</td>
+                                        <td>2,800,000</td>
+                                        <td>~700,000 MT</td>
+                                        <td><span class="badge badge-warning">MEDIUM</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>14</td>
+                                        <td>🇿🇲 Zambia</td>
+                                        <td>475,000</td>
+                                        <td>~175,000 MT</td>
+                                        <td><span class="badge badge-warning">MEDIUM</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="chart-container">
+                            <h4 class="chart-title">Soybean Yield Gaps - Investment Opportunity</h4>
+                            <canvas id="soybeanYieldChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">🌻 Sunflower: Tanzania's Dual-Season Advantage</h2>
+                            <p class="card-subtitle">Black Sea dominance persists; Tanzania offers unique bimodal harvests</p>
+                        </div>
+
+                        <div class="production-grid">
+                            <div class="production-item">
+                                <h4>Tanzania Farmers</h4>
+                                <div class="production-value">1.6M</div>
+                                <div class="production-label">Across 800,000 households</div>
+                            </div>
+                            <div class="production-item">
+                                <h4>Crushing Utilization</h4>
+                                <div class="production-value">20%</div>
+                                <div class="production-label">Of 1.86M tonnes capacity</div>
+                            </div>
+                            <div class="production-item">
+                                <h4>India Export Share</h4>
+                                <div class="production-value">80%+</div>
+                                <div class="production-label">Of Tanzania's exports</div>
+                            </div>
+                            <div class="production-item">
+                                <h4>Growth</h4>
+                                <div class="production-value">$70M</div>
+                                <div class="production-label">From $1M in a decade</div>
+                            </div>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Country</th>
+                                        <th>Production (MT)</th>
+                                        <th>Crushing Capacity</th>
+                                        <th>Raw Seed Available</th>
+                                        <th>Export Form</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>🇷🇺 Russia</td>
+                                        <td>16,550,000</td>
+                                        <td>18,400,000</td>
+                                        <td>Minimal</td>
+                                        <td>Oil, meal</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇺🇦 Ukraine</td>
+                                        <td>12,900,000</td>
+                                        <td>~12,000,000</td>
+                                        <td>Minimal</td>
+                                        <td>Oil, meal</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇰🇿 Kazakhstan</td>
+                                        <td>1,840,000</td>
+                                        <td>3,200,000</td>
+                                        <td><strong>312,400 MT</strong></td>
+                                        <td>Growing seed exports</td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇹🇿 Tanzania</td>
+                                        <td>560,000-1,000,000</td>
+                                        <td>1,860,000</td>
+                                        <td><strong>Significant</strong></td>
+                                        <td>Seed and meal</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">📊 Yield Gap Investment Opportunities</h2>
+                            <p class="card-subtitle">Massive improvement potential across Africa and Central Asia</p>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Oilseed</th>
+                                        <th>Country</th>
+                                        <th>Current Yield</th>
+                                        <th>Attainable Yield</th>
+                                        <th>Gap %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Soybean</td>
+                                        <td>🇲🇼 Malawi</td>
+                                        <td>0.95 t/ha</td>
+                                        <td>2.63 t/ha</td>
+                                        <td><span class="badge badge-danger">276%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Soybean</td>
+                                        <td>🇿🇲 Zambia</td>
+                                        <td>1.41 t/ha</td>
+                                        <td>3.07 t/ha</td>
+                                        <td><span class="badge badge-danger">117%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Cottonseed</td>
+                                        <td>🇹🇿 Tanzania</td>
+                                        <td>1.34 t/ha</td>
+                                        <td>3.00 t/ha</td>
+                                        <td><span class="badge badge-warning">124%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Groundnut</td>
+                                        <td>🇬🇭 Ghana</td>
+                                        <td>1.30 t/ha</td>
+                                        <td>3.50 t/ha</td>
+                                        <td><span class="badge badge-warning">169%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sesame</td>
+                                        <td>🇳🇬 Nigeria</td>
+                                        <td>0.30-0.55 t/ha</td>
+                                        <td>2.00 t/ha</td>
+                                        <td><span class="badge badge-danger">264%</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sunflower</td>
+                                        <td>🇹🇿 Tanzania</td>
+                                        <td>1.0 t/ha</td>
+                                        <td>2.0-2.5 t/ha</td>
+                                        <td><span class="badge badge-warning">100-150%</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: ETHIOPIA & KAZAKHSTAN -->
+                <div class="tab-content" id="section3">
+                    <div class="page-header">
+                        <h1 class="page-title">Ethiopia & Kazakhstan Analysis</h1>
+                        <p class="page-description">Top 2 optimal locations for vegetable oil production</p>
+                    </div>
+
+                    <div class="comparison-grid">
+                        <div class="comparison-card">
+                            <h3>🇪🇹 Ethiopia - Sesame Oil</h3>
+                            <div class="detail-row">
+                                <span class="detail-label">Overall Rank</span>
+                                <span class="detail-value"><strong style="color: var(--teal);">⭐⭐⭐⭐⭐ #1</strong></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Best For</span>
+                                <span class="detail-value">Sesame Oil</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Electricity Cost</span>
+                                <span class="detail-value">$0.03/kWh</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Labor Cost</span>
+                                <span class="detail-value">$909/year/worker</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Expected Return</span>
+                                <span class="detail-value"><strong style="color: var(--teal);">20-30% IRR</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="comparison-card">
+                            <h3>🇰🇿 Kazakhstan - Sunflower Oil</h3>
+                            <div class="detail-row">
+                                <span class="detail-label">Overall Rank</span>
+                                <span class="detail-value"><strong style="color: var(--teal);">⭐⭐⭐⭐½ #2</strong></span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Best For</span>
+                                <span class="detail-value">Sunflower Oil</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Production 2024</span>
+                                <span class="detail-value">3.2M tons oilseeds</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Capacity Utilization</span>
+                                <span class="detail-value"><50% (opportunity)</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Expected Return</span>
+                                <span class="detail-value"><strong style="color: var(--teal);">15-25% IRR</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">INSTC Corridor Map</h2>
+                            <p class="card-subtitle">International North-South Transport Corridor (30-40% faster, 20-30% cheaper than Suez)</p>
+                        </div>
+                        <div class="map-container">
+                            <div id="map3" style="width: 100%; height: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Critical Recommendation: Crude Oil Production</h2>
+                            <p class="card-subtitle">19.25% tariff differential favoring crude vs refined oils</p>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Crude Oil Plant</th>
+                                        <th>Integrated Plant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Capital Cost (20 TPD)</td>
+                                        <td>$180,000-$330,000</td>
+                                        <td>$360,000-$630,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Payback Period</td>
+                                        <td>2.5-3.5 years</td>
+                                        <td>3-5 years</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Labor Required</td>
+                                        <td>6-10 workers/shift</td>
+                                        <td>15-25 workers/shift</td>
+                                    </tr>
+                                    <tr>
+                                        <td>IRR</td>
+                                        <td><strong style="color: var(--teal);">17-30%</strong></td>
+                                        <td>15-25%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Corrected Economics Using Local Seed Prices</h2>
+                            <p class="card-subtitle">13-16% operating margins when using local seed procurement</p>
+                        </div>
+
+                        <div class="comparison-grid">
+                            <div class="comparison-card">
+                                <h3>Ethiopia - Sesame (Local Seeds)</h3>
+                                <div class="detail-row">
+                                    <span class="detail-label">Seeds (local purchase)</span>
+                                    <span class="detail-value" style="color: var(--coral);">-$1,050/ton</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Oil (48% yield)</span>
+                                    <span class="detail-value" style="color: var(--teal);">+$1,152/ton</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Cake</span>
+                                    <span class="detail-value" style="color: var(--teal);">+$150/ton</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Processing & logistics</span>
+                                    <span class="detail-value" style="color: var(--coral);">-$95</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label"><strong>Net Margin</strong></span>
+                                    <span class="detail-value"><strong style="color: var(--teal); font-size: 18px;">$157/ton (13%)</strong></span>
+                                </div>
+                            </div>
+
+                            <div class="comparison-card">
+                                <h3>Kazakhstan - Sunflower (Local Seeds)</h3>
+                                <div class="detail-row">
+                                    <span class="detail-label">Seeds (local)</span>
+                                    <span class="detail-value" style="color: var(--coral);">-$425/ton</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Oil (42% yield)</span>
+                                    <span class="detail-value" style="color: var(--teal);">+$412/ton</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Meal</span>
+                                    <span class="detail-value" style="color: var(--teal);">+$138/ton</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Processing & logistics</span>
+                                    <span class="detail-value" style="color: var(--coral);">-$45</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label"><strong>Net Margin</strong></span>
+                                    <span class="detail-value"><strong style="color: var(--teal); font-size: 18px;">$80/ton (16%)</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-box warning">
+                            <div class="info-box-title">⚠️ Key Success Factors for 13-16% Margins</div>
+                            <ul>
+                                <li>Direct farmer contracts to bypass intermediaries</li>
+                                <li>Harvest-time purchasing for lowest prices</li>
+                                <li>Export to premium markets (not just India)</li>
+                                <li>Efficient operations to minimize processing costs</li>
+                                <li>Scale to spread fixed costs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: INDIA MARKET -->
+                <div class="tab-content" id="section4">
+                    <div class="page-header">
+                        <h1 class="page-title">India Import Market Analysis</h1>
+                        <p class="page-description">Strategic assessment of the $15-19 billion opportunity</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Import Dependency</div>
+                            <div class="stat-value">57%</div>
+                            <div class="stat-change">Of consumption</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Viable Import Oils</div>
+                            <div class="stat-value">2</div>
+                            <div class="stat-change">Soybean & Sunflower only</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Soybean Imports (2024-25)</div>
+                            <div class="stat-value">5.47M</div>
+                            <div class="stat-change">MT (+36% YoY record high)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Sustained Demand Through</div>
+                            <div class="stat-value">2030</div>
+                            <div class="stat-change">50-55% import dependence</div>
+                        </div>
+                    </div>
+
+                    <div class="info-box danger">
+                        <div class="info-box-title">🎯 Critical Finding on Viable Oils</div>
+                        <p>Of the five oils investigated, <strong>only soybean and sunflower</strong> present viable export opportunities. Cottonseed, groundnut, and sesame oils have <strong>negligible import demand</strong>—India is either self-sufficient or a net exporter.</p>
+                        <ul>
+                            <li>Groundnut: India exported 680,698 tonnes worth $860.68M (world's #1 exporter, 83% global share)</li>
+                            <li>Cottonseed: Less than 0.4% of consumption imported</li>
+                            <li>Sesame: Only 1,200 tonnes imported vs 10 million kg exported (10:1 export ratio)</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Major Import Ports & Trade Routes</h2>
+                            <p class="card-subtitle">Infrastructure for vegetable oil imports</p>
+                        </div>
+                        <div class="map-container">
+                            <div id="map4" style="width: 100%; height: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Soybean Oil Import Growth</h2>
+                            <p class="card-subtitle">Accelerating demand trajectory (36% surge in 2024-25)</p>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="soybeanImportChart"></canvas>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Volume (M Tonnes)</th>
+                                        <th>Value (USD Billion)</th>
+                                        <th>YoY Change</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2019</td>
+                                        <td>2.8</td>
+                                        <td>$2.4</td>
+                                        <td>Baseline</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2022</td>
+                                        <td>3.8</td>
+                                        <td>$5.9</td>
+                                        <td>+22%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023</td>
+                                        <td>3.5</td>
+                                        <td>$4.0</td>
+                                        <td>-8%</td>
+                                    </tr>
+                                    <tr style="background: var(--bg-secondary);">
+                                        <td><strong>2024-25</strong></td>
+                                        <td><strong>5.47</strong></td>
+                                        <td><strong>$5.6</strong></td>
+                                        <td><strong style="color: var(--teal);">+36%</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Supplier Market Shares</h2>
+                            <p class="card-subtitle">Argentina dominates with 53% share</p>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="soybeanSupplierChart"></canvas>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Country</th>
+                                        <th>Volume (MT)</th>
+                                        <th>Market Share</th>
+                                        <th>Trend</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>🇦🇷 Argentina</td>
+                                        <td>2.89 million</td>
+                                        <td>53%</td>
+                                        <td><span class="badge badge-success">Gaining ↑</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇧🇷 Brazil</td>
+                                        <td>1.14 million</td>
+                                        <td>21%</td>
+                                        <td><span class="badge badge-danger">Losing ↓</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇳🇵 Nepal (re-exports)</td>
+                                        <td>0.75 million</td>
+                                        <td>14%</td>
+                                        <td><span class="badge badge-warning">Surging ↑↑</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>🇷🇺 Russia</td>
+                                        <td>0.35 million</td>
+                                        <td>6%</td>
+                                        <td><span class="badge badge-success">Gaining ↑</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">India's Structural Deficit</h2>
+                            <p class="card-subtitle">Sustained import demand through 2030</p>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>2023-24</th>
+                                        <th>Trend</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Domestic Production</strong></td>
+                                        <td>11-12 million tonnes</td>
+                                        <td><span class="badge badge-danger">Stagnant</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Domestic Consumption</strong></td>
+                                        <td>25-26 million tonnes</td>
+                                        <td><span class="badge badge-success">Growing 3-3.5% CAGR</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Import Requirement</strong></td>
+                                        <td>14 million tonnes</td>
+                                        <td><span class="badge badge-warning">Persistent</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Self-sufficiency Ratio</strong></td>
+                                        <td>43-45%</td>
+                                        <td><span class="badge badge-info">Slight improvement</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="info-box warning">
+                            <div class="info-box-title">Government Target vs Reality</div>
+                            <p>The Indian government targets 72% self-sufficiency by 2030-31, requiring production CAGR of 5.2% versus historical 1.9%—an ambitious target with significant execution risk. <strong>Import dependence of 50-55% through 2030 is the realistic scenario.</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Current Tariff Structure (May 2025)</h2>
+                            <p class="card-subtitle">19.25% differential favoring crude oil imports</p>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Basic Duty</th>
+                                        <th>AIDC</th>
+                                        <th>Social Welfare</th>
+                                        <th>Total Effective</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="background: #D1FAE5;">
+                                        <td><strong>Crude soybean/sunflower oil</strong></td>
+                                        <td>10%</td>
+                                        <td>5%</td>
+                                        <td>1.5%</td>
+                                        <td><strong style="color: var(--teal); font-size: 18px;">16.5%</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Refined soybean/sunflower oil</strong></td>
+                                        <td>32.5%</td>
+                                        <td>0%</td>
+                                        <td>2.75%</td>
+                                        <td><strong>35.75%</strong></td>
+                                    </tr>
+                                    <tr style="background: var(--bg-secondary);">
+                                        <td colspan="4"><strong>Differential favoring crude oil:</strong></td>
+                                        <td><strong style="color: var(--secondary); font-size: 18px;">19.25%</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="info-box warning">
+                            <div class="info-box-title">⚠️ Tariff Volatility Warning</div>
+                            <p><strong>Seven major duty changes between 2021-2025.</strong> India oscillates between consumer protection (lower duties) and farmer support (higher duties), making long-term price planning challenging.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONCLUSION TAB -->
+                <div class="tab-content" id="conclusion">
+                    <div class="page-header">
+                        <h1 class="page-title">Conclusion & Strategic Recommendations</h1>
+                        <p class="page-description">Final investment recommendations based on comprehensive analysis</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Executive Summary</h2>
+                            <p class="card-subtitle">Key findings and actionable insights</p>
+                        </div>
+
+                        <div class="info-box success">
+                            <div class="info-box-title">🎯 Primary Recommendation: Multi-Phase Approach</div>
+                            <p><strong>Phase 1 (Year 1-2):</strong> Establish sesame oil production in Ethiopia targeting premium Asian markets (South Korea, Japan, China) with 20-30% IRR potential.</p>
+                            <p><strong>Phase 2 (Year 3-5):</strong> Expand to sunflower oil production in Kazakhstan for India export via INSTC corridor with 15-25% IRR potential.</p>
+                            <p><strong>Total Investment:</strong> $250,000-400,000 (Phase 1) + $400,000-600,000 (Phase 2) = $650,000-1,000,000</p>
+                            <p><strong>Expected Combined Returns:</strong> 17-28% blended IRR with geographic and product diversification.</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Critical Success Factors</h2>
+                        </div>
+
+                        <div class="comparison-grid">
+                            <div class="comparison-card">
+                                <h3>🎯 Market Selection</h3>
+                                <ul style="margin-left: 20px; color: var(--text-primary);">
+                                    <li><strong>Only 2 viable oils for India:</strong> Soybean and sunflower (forget cottonseed, groundnut, sesame)</li>
+                                    <li><strong>India's structural deficit:</strong> 50-55% import dependence through 2030 ensures sustained demand</li>
+                                    <li><strong>Soybean oil opportunity:</strong> 5.47M tonnes 2024-25 (+36% YoY), Argentina losing share</li>
+                                    <li><strong>Sunflower oil:</strong> 2.6-3.0M tonnes annually, 97% import dependent</li>
+                                </ul>
+                            </div>
+
+                            <div class="comparison-card">
+                                <h3>⚙️ Production Strategy</h3>
+                                <ul style="margin-left: 20px; color: var(--text-primary);">
+                                    <li><strong>Focus on crude oil:</strong> 19.25% tariff differential vs refined</li>
+                                    <li><strong>Local seed procurement:</strong> Essential for 13-16% margins</li>
+                                    <li><strong>Direct farmer contracts:</strong> Bypass intermediaries at harvest time</li>
+                                    <li><strong>Optimal scale:</strong> 50-100 TPD achieves 20-28% IRR</li>
+                                </ul>
+                            </div>
+
+                            <div class="comparison-card">
+                                <h3>🌍 Geographic Positioning</h3>
+                                <ul style="margin-left: 20px; color: var(--text-primary);">
+                                    <li><strong>Ethiopia advantages:</strong> $0.03/kWh electricity, $909/year labor, 8-15 year tax holidays</li>
+                                    <li><strong>Kazakhstan advantages:</strong> 3.2M tons capacity <50% utilized, INSTC corridor (30-40% faster)</li>
+                                    <li><strong>Nepal warning:</strong> India tightening SAFTA oversight, June 2025 duty cut reduces advantage</li>
+                                    <li><strong>Tanzania opportunity:</strong> Dual-season sunflower, 80% utilization gap at crushing facilities</li>
+                                </ul>
+                            </div>
+
+                            <div class="comparison-card">
+                                <h3>⚠️ Risk Mitigation</h3>
+                                <ul style="margin-left: 20px; color: var(--text-primary);">
+                                    <li><strong>Tariff volatility:</strong> Build 15% margin buffer, India changed duties 7x in 2021-2025</li>
+                                    <li><strong>Geopolitical risks:</strong> Diversify between Ethiopia (sesame) and Kazakhstan (sunflower)</li>
+                                    <li><strong>Market diversification:</strong> Target premium Asian markets, not just India</li>
+                                    <li><strong>Quality standards:</strong> Obtain FSSAI compliance, pre-approve GM varieties</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Investment Scenarios Comparison</h2>
+                            <p class="card-subtitle">Three strategic options evaluated</p>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Scenario</th>
+                                        <th>Location</th>
+                                        <th>Product</th>
+                                        <th>Investment</th>
+                                        <th>Expected IRR</th>
+                                        <th>Key Advantages</th>
+                                        <th>Major Risks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="background: #D1FAE5;">
+                                        <td><strong>Recommended</strong></td>
+                                        <td>Ethiopia</td>
+                                        <td>Sesame Oil</td>
+                                        <td>$250K-400K</td>
+                                        <td><strong style="color: var(--teal);">20-30%</strong></td>
+                                        <td>Cheapest electricity & labor, premium quality Humera sesame, Asian market demand</td>
+                                        <td>Political instability (Tigray/Amhara), forex shortage improving, AGOA suspended</td>
+                                    </tr>
+                                    <tr style="background: #D1FAE5;">
+                                        <td><strong>Recommended</strong></td>
+                                        <td>Kazakhstan</td>
+                                        <td>Sunflower Oil</td>
+                                        <td>$400K-600K</td>
+                                        <td><strong style="color: var(--teal);">15-25%</strong></td>
+                                        <td>INSTC corridor 30-40% faster, massive underutilized capacity, government subsidies</td>
+                                        <td>Higher labor costs, Russia sanctions affecting routes, drought vulnerability</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Alternative</strong></td>
+                                        <td>Tanzania</td>
+                                        <td>Sunflower Oil</td>
+                                        <td>$300K-500K</td>
+                                        <td><strong>15-22%</strong></td>
+                                        <td>Dual-season harvest, political stability, 80% crushing capacity unused</td>
+                                        <td>Longer shipping (8-9 days), yield gaps 100-150%, infrastructure improving</td>
+                                    </tr>
+                                    <tr style="background: #FEE2E2;">
+                                        <td><strong>Not Recommended</strong></td>
+                                        <td>Nepal</td>
+                                        <td>Re-export Model</td>
+                                        <td>$200K-400K</td>
+                                        <td><strong>12-20%</strong></td>
+                                        <td>Zero-duty SAFTA access, 2-5 days transit, established infrastructure</td>
+                                        <td>India tightening oversight, June 2025 duty cut to 10%, SAFTA violation concerns, high regulatory risk</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Yield Gap Investment Opportunities</h2>
+                            <p class="card-subtitle">Long-term expansion potential through agricultural improvement</p>
+                        </div>
+
+                        <div class="info-box">
+                            <div class="info-box-title">💡 Strategic Insight: Contract Farming + Technology Transfer</div>
+                            <p>Africa's 100-276% yield gaps represent massive long-term opportunity. Partner with farmers through contract farming to introduce improved seeds, fertilizers, and irrigation. Examples:</p>
+                            <ul>
+                                <li><strong>Malawi soybean:</strong> 276% yield gap (0.95 → 2.63 t/ha) = potential 2.6x production increase</li>
+                                <li><strong>Tanzania sunflower:</strong> 100-150% yield gap = potential 2-2.5x production increase</li>
+                                <li><strong>Nigeria sesame:</strong> 264% yield gap = potential 3.6x production increase</li>
+                            </ul>
+                            <p><strong>Implementation:</strong> Start with 500-1,000 hectare pilot programs providing seeds, fertilizers, and technical assistance in exchange for guaranteed purchase at harvest. Scale successful models to 5,000-10,000 hectares within 5 years.</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Supplier Displacement Opportunities in India Market</h2>
+                            <p class="card-subtitle">Market share to target from vulnerable suppliers</p>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Brazil (Soybean)</div>
+                                <div class="stat-value">1.14M</div>
+                                <div class="stat-change">MT declining due to biodiesel mandate</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Nepal (Re-exports)</div>
+                                <div class="stat-value">0.75M</div>
+                                <div class="stat-change">MT under regulatory scrutiny</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Netherlands (Re-exports)</div>
+                                <div class="stat-value">0.22M</div>
+                                <div class="stat-change">MT higher-cost intermediary</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Total Opportunity</div>
+                                <div class="stat-value">2.11M</div>
+                                <div class="stat-change">MT available market share</div>
+                            </div>
+                        </div>
+
+                        <div class="info-box success">
+                            <div class="info-box-title">🎯 Competitive Positioning Strategy</div>
+                            <ul>
+                                <li><strong>Price leadership:</strong> Target $950-1,000/tonne FOB to undercut Argentina ($1,027-1,100/tonne)</li>
+                                <li><strong>Quality certification:</strong> FSSAI compliance, non-GM premium positioning</li>
+                                <li><strong>Volume contracts:</strong> Approach Adani Wilmar, Cargill India, Ruchi Soya with consistent supply guarantees</li>
+                                <li><strong>Geographic advantage:</strong> Ethiopia/Kazakhstan closer than South America (25-35 vs 35-45 days transit)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Implementation Timeline</h2>
+                            <p class="card-subtitle">Phased rollout strategy over 5 years</p>
+                        </div>
+
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Phase</th>
+                                        <th>Timeline</th>
+                                        <th>Activities</th>
+                                        <th>Investment</th>
+                                        <th>Expected Output</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Phase 1A</strong></td>
+                                        <td>Months 1-3</td>
+                                        <td>Site selection, regulatory approvals, farmer contract negotiations in Ethiopia</td>
+                                        <td>$50,000</td>
+                                        <td>Permits secured, 500 hectare farmer network</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Phase 1B</strong></td>
+                                        <td>Months 4-9</td>
+                                        <td>Plant construction (Adama/Modjo), equipment installation, hiring & training</td>
+                                        <td>$200K-350K</td>
+                                        <td>20-30 TPD crude sesame oil plant operational</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Phase 1C</strong></td>
+                                        <td>Months 10-24</td>
+                                        <td>Ramp to full capacity, establish Asian market relationships, refine operations</td>
+                                        <td>Working capital</td>
+                                        <td>6,000-9,000 tonnes/year crude sesame oil, 20-30% IRR</td>
+                                    </tr>
+                                    <tr style="background: var(--bg-secondary);">
+                                        <td><strong>Phase 2A</strong></td>
+                                        <td>Months 25-30</td>
+                                        <td>Kazakhstan feasibility, INSTC logistics setup, government incentive applications</td>
+                                        <td>$75,000</td>
+                                        <td>Site selected, subsidies approved, shipping routes confirmed</td>
+                                    </tr>
+                                    <tr style="background: var(--bg-secondary);">
+                                        <td><strong>Phase 2B</strong></td>
+                                        <td>Months 31-42</td>
+                                        <td>Plant construction East Kazakhstan, farmer contracts for sunflower seeds</td>
+                                        <td>$325K-525K</td>
+                                        <td>50-100 TPD crude sunflower oil plant operational</td>
+                                    </tr>
+                                    <tr style="background: var(--bg-secondary);">
+                                        <td><strong>Phase 2C</strong></td>
+                                        <td>Months 43-60</td>
+                                        <td>Ramp production, establish India relationships, optimize INSTC corridor</td>
+                                        <td>Working capital</td>
+                                        <td>15,000-30,000 tonnes/year crude sunflower oil, 15-25% IRR</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Financial Projections Summary</h2>
+                            <p class="card-subtitle">5-year blended returns from dual operations</p>
+                        </div>
+
+                        <div class="comparison-grid">
+                            <div class="comparison-card">
+                                <h3>Year 1-2 (Ethiopia Only)</h3>
+                                <div class="detail-row">
+                                    <span class="detail-label">Total Investment</span>
+                                    <span class="detail-value">$250,000-400,000</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Annual Production</span>
+                                    <span class="detail-value">6,000-9,000 MT crude oil</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Annual Revenue</span>
+                                    <span class="detail-value">$1.8M-2.7M</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Net Margin</span>
+                                    <span class="detail-value">13% ($234K-351K/year)</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label"><strong>Simple Payback</strong></span>
+                                    <span class="detail-value"><strong style="color: var(--teal);">2.5-3 years</strong></span>
+                                </div>
+                            </div>
+
+                            <div class="comparison-card">
+                                <h3>Year 3-5 (Both Operations)</h3>
+                                <div class="detail-row">
+                                    <span class="detail-label">Total Investment</span>
+                                    <span class="detail-value">$650K-1.0M cumulative</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Combined Production</span>
+                                    <span class="detail-value">21K-39K MT crude oil/year</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Combined Revenue</span>
+                                    <span class="detail-value">$3.9M-7.2M/year</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Blended Net Margin</span>
+                                    <span class="detail-value">14-15% ($546K-1.08M/year)</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label"><strong>Blended IRR</strong></span>
+                                    <span class="detail-value"><strong style="color: var(--teal);">18-26%</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-box warning">
+                        <div class="info-box-title">⚠️ Key Assumptions & Sensitivities</div>
+                        <ul>
+                            <li><strong>Local seed procurement:</strong> Ethiopia sesame $900-1,200/ton, Kazakhstan sunflower $425/ton (essential for margins)</li>
+                            <li><strong>Crude oil pricing:</strong> Sesame $2,400/ton FOB, Sunflower $980/ton FOB (±20% sensitivity)</li>
+                            <li><strong>India tariffs:</strong> 16.5% crude (volatile - build 15% buffer)</li>
+                            <li><strong>Capacity utilization:</strong> 80-85% assumed (ramp over 18-24 months)</li>
+                            <li><strong>Exchange rates:</strong> ETB, KZT relatively stable but monitor quarterly</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Final Recommendation</h2>
+                        </div>
+
+                        <div class="info-box success" style="font-size: 16px;">
+                            <div class="info-box-title" style="font-size: 18px;">✅ Proceed with Dual-Phase Strategy</div>
+                            <p><strong>The analysis conclusively supports a phased approach:</strong></p>
+                            <ol style="margin-left: 20px; margin-top: 15px; line-height: 1.8;">
+                                <li><strong>Phase 1:</strong> Establish Ethiopia sesame oil operation for premium Asian markets. This lower-risk entry ($250K-400K) generates 20-30% IRR and validates operational capabilities.</li>
+                                <li><strong>Phase 2:</strong> Expand to Kazakhstan sunflower oil targeting India's massive structural deficit via INSTC corridor. This scales the business ($400K-600K additional) with 15-25% IRR.</li>
+                                <li><strong>Geographic diversification</strong> mitigates political risks (Ethiopia instability, Kazakhstan-Russia sanctions).</li>
+                                <li><strong>Product diversification</strong> hedges against single commodity price volatility.</li>
+                                <li><strong>Market diversification</strong> reduces dependence on India's volatile tariff policy.</li>
+                            </ol>
+                            <p style="margin-top: 20px;"><strong style="font-size: 17px;">Expected Outcome:</strong> $650K-1M investment generating $546K-1.08M annual profit by Year 5, representing 18-26% blended IRR with sustained growth potential through African yield gap improvements and India's persistent 50-55% import dependency through 2030.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-box danger">
+                        <div class="info-box-title">🚫 What NOT to Do</div>
+                        <ul>
+                            <li><strong>Do NOT pursue cottonseed, groundnut, or sesame for India export</strong> - India is self-sufficient or net exporter</li>
+                            <li><strong>Do NOT build refined oil capacity initially</strong> - 19.25% tariff disadvantage vs crude, save $180K-300K</li>
+                            <li><strong>Do NOT rely on Nepal SAFTA arbitrage</strong> - regulatory tightening, June 2025 duty cuts, high violation risk</li>
+                            <li><strong>Do NOT ignore local seed pricing</strong> - margins collapse from 13-16% to negative without direct farmer contracts</li>
+                            <li><strong>Do NOT plan on Argentina-level pricing</strong> - need $950-1,000/tonne to compete vs their $1,027-1,100/tonne</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        const maps = {};
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-tab');
+                
+                // Update tab active states
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update content active states
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(targetId).classList.add('active');
+                
+                // Scroll to top
+                document.querySelector('.main-content').scrollTop = 0;
+                
+                // Invalidate map sizes when switching to tabs with maps
+                setTimeout(() => {
+                    if (maps.map1) maps.map1.invalidateSize();
+                    if (maps.map2) maps.map2.invalidateSize();
+                    if (maps.map3) maps.map3.invalidateSize();
+                    if (maps.map4) maps.map4.invalidateSize();
+                }, 100);
+            });
+        });
+
+        // Initialize maps
+        function initializeMaps() {
+            // Map 1: Section 1 - Investment Locations
+            maps.map1 = L.map('map1').setView([20, 50], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(maps.map1);
+
+            const countries = [
+                {name: 'Nepal', lat: 28.3949, lon: 84.1240, rank: 1, color: '#F59E0B'},
+                {name: 'Tanzania', lat: -6.3690, lon: 34.8888, rank: 2, color: '#14B8A6'},
+                {name: 'Thailand', lat: 15.8700, lon: 100.9925, rank: 3, color: '#3B82F6'},
+                {name: 'Kazakhstan', lat: 48.0196, lon: 66.9237, rank: 4, color: '#FB923C'},
+                {name: 'Vietnam', lat: 14.0583, lon: 108.2772, rank: 5, color: '#8B5CF6'},
+                {name: 'Ghana', lat: 7.9465, lon: -1.0232, rank: 6, color: '#EC4899'},
+                {name: 'Uzbekistan', lat: 41.3775, lon: 64.5853, rank: 7, color: '#10B981'}
+            ];
+
+            const india = {lat: 20.5937, lon: 78.9629};
+
+            // Add India marker first
+            L.marker([india.lat, india.lon], {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background: #14B8A6; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px;">🇮🇳</div>`,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16]
+                })
+            }).addTo(maps.map1).bindPopup('<strong style="font-size: 14px;">India</strong><br>Target Market');
+
+            // Add country markers and routes
+            countries.forEach(country => {
+                // Add marker
+                L.marker([country.lat, country.lon], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background: ${country.color}; width: 36px; height: 36px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">#${country.rank}</div>`,
+                        iconSize: [36, 36],
+                        iconAnchor: [18, 18]
+                    })
+                }).addTo(maps.map1).bindPopup(`<strong style="font-size: 14px;">#${country.rank} ${country.name}</strong><br>Click tab for details`);
+
+                // Add route line
+                L.polyline([[country.lat, country.lon], [india.lat, india.lon]], {
+                    color: country.color,
+                    weight: 2,
+                    opacity: 0.6,
+                    dashArray: '5, 10'
+                }).addTo(maps.map1);
+            });
+
+
+            // Map 2: Section 2 - Global Production
+            maps.map2 = L.map('map2').setView([20, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(maps.map2);
+
+            const producers = [
+                {name: 'Brazil', crop: 'Soybean', production: '163M MT', lat: -14.2350, lon: -51.9253, size: 16, color: '#10B981'},
+                {name: 'Argentina', crop: 'Soybean', production: '48M MT', lat: -38.4161, lon: -63.6167, size: 14, color: '#14B8A6'},
+                {name: 'USA', crop: 'Soybean', production: '112M MT', lat: 37.0902, lon: -95.7129, size: 15, color: '#059669'},
+                {name: 'Tanzania', crop: 'Sunflower', production: '560K-1M MT', lat: -6.3690, lon: 34.8888, size: 12, color: '#F59E0B'},
+                {name: 'Kazakhstan', crop: 'Sunflower', production: '1.84M MT', lat: 48.0196, lon: 66.9237, size: 13, color: '#FB923C'},
+                {name: 'Ethiopia', crop: 'Sesame', production: '300-350K MT', lat: 9.1450, lon: 40.4897, size: 11, color: '#8B5CF6'},
+                {name: 'Russia', crop: 'Sunflower', production: '16.55M MT', lat: 61.5240, lon: 105.3188, size: 15, color: '#EF4444'},
+                {name: 'Ukraine', crop: 'Sunflower', production: '12.9M MT', lat: 48.3794, lon: 31.1656, size: 14, color: '#F97316'}
+            ];
+
+            producers.forEach(producer => {
+                L.circleMarker([producer.lat, producer.lon], {
+                    radius: producer.size,
+                    fillColor: producer.color,
+                    color: '#fff',
+                    weight: 2,
+                    fillOpacity: 0.8
+                }).addTo(maps.map2).bindPopup(`<strong style="font-size: 14px;">${producer.name}</strong><br>${producer.crop}: ${producer.production}`);
+            });
+
+            // Map 3: INSTC Corridor
+            maps.map3 = L.map('map3').setView([35, 55], 3);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(maps.map3);
+
+            const instcRoute = [
+                {lat: 48.0196, lon: 66.9237, name: 'Kazakhstan', info: 'Origin - Sunflower Production'},
+                {lat: 41.3775, lon: 64.5853, name: 'Uzbekistan', info: 'Transit Point'},
+                {lat: 35.6892, lon: 51.3890, name: 'Tehran, Iran', info: 'Rail Hub'},
+                {lat: 27.1767, lon: 56.2778, name: 'Bandar Abbas', info: 'Iranian Port - 3-5 days to India'},
+                {lat: 20.5937, lon: 78.9629, name: 'India', info: 'Destination Market'}
+            ];
+
+            // Draw route line
+            const routeCoords = instcRoute.map(point => [point.lat, point.lon]);
+            L.polyline(routeCoords, {
+                color: '#F59E0B',
+                weight: 4,
+                opacity: 0.7,
+                dashArray: '10, 5'
+            }).addTo(maps.map3);
+
+            // Add markers
+            instcRoute.forEach((point, index) => {
+                let markerColor = '#3B82F6';
+                if (index === 0) markerColor = '#F59E0B'; // Kazakhstan - origin
+                if (index === instcRoute.length - 1) markerColor = '#14B8A6'; // India - destination
+                if (point.name === 'Bandar Abbas') markerColor = '#FB923C'; // Port
+
+                L.marker([point.lat, point.lon], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background: ${markerColor}; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14]
+                    })
+                }).addTo(maps.map3).bindPopup(`<strong style="font-size: 14px;">${point.name}</strong><br>${point.info}`);
+            });
+
+            // Map 4: India Ports
+            maps.map4 = L.map('map4').setView([20, 78], 5);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(maps.map4);
+
+            const ports = [
+                {name: 'Kandla', lat: 23.0225, lon: 70.0833, capacity: '0.73M tonnes', info: 'Largest edible oil handler'},
+                {name: 'Mumbai (JNPT)', lat: 19.0760, lon: 72.8777, capacity: '56% container', info: 'Key for refined oils'},
+                {name: 'Kakinada', lat: 16.9891, lon: 82.2475, capacity: '433K tonnes', info: 'Primary sunflower entry'},
+                {name: 'Chennai', lat: 13.0827, lon: 80.2707, capacity: '2nd largest', info: 'Diversified origins'}
+            ];
+
+            // Add trade route origins
+            const tradeOrigins = [
+                {name: 'Argentina', lat: -34.6037, lon: -58.3816, color: '#3B82F6'},
+                {name: 'Brazil', lat: -23.5505, lon: -46.6333, color: '#14B8A6'},
+                {name: 'Russia', lat: 45.0428, lon: 38.9769, color: '#EF4444'},
+                {name: 'Ukraine', lat: 46.4825, lon: 30.7233, color: '#F97316'}
+            ];
+
+            // Draw trade routes to major ports
+            tradeOrigins.forEach(origin => {
+                // Route to Mumbai (main destination)
+                L.polyline([[origin.lat, origin.lon], [19.0760, 72.8777]], {
+                    color: origin.color,
+                    weight: 2,
+                    opacity: 0.4,
+                    dashArray: '8, 12'
+                }).addTo(maps.map4);
+
+                // Add origin marker
+                L.circleMarker([origin.lat, origin.lon], {
+                    radius: 8,
+                    fillColor: origin.color,
+                    color: '#fff',
+                    weight: 2,
+                    fillOpacity: 0.9
+                }).addTo(maps.map4).bindPopup(`<strong>${origin.name}</strong><br>Export Origin`);
+            });
+
+            // Add port markers
+            ports.forEach(port => {
+                L.marker([port.lat, port.lon], {
+                    icon: L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style="background: #14B8A6; width: 32px; height: 32px; border-radius: 50%; border: 3px solid #F59E0B; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px;">⚓</div>`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16]
+                    })
+                }).addTo(maps.map4).bindPopup(`<strong style="font-size: 14px;">${port.name}</strong><br>Capacity: ${port.capacity}<br>${port.info}`);
+            });
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Yield Gap Chart
+            const yieldCtx = document.getElementById('soybeanYieldChart').getContext('2d');
+            new Chart(yieldCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Malawi', 'Zambia', 'Tanzania', 'Ghana', 'Nigeria', 'Tanzania\nSunflower'],
+                    datasets: [{
+                        label: 'Current Yield',
+                        data: [0.95, 1.41, 1.34, 1.30, 0.43, 1.0],
+                        backgroundColor: '#FB923C'
+                    }, {
+                        label: 'Attainable Yield',
+                        data: [2.63, 3.07, 3.00, 3.50, 2.00, 2.25],
+                        backgroundColor: '#14B8A6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Tonnes per Hectare' }
+                        }
+                    }
+                }
+            });
+
+            // Import Growth Chart
+            const importCtx = document.getElementById('soybeanImportChart').getContext('2d');
+            new Chart(importCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2019', '2020', '2021', '2022', '2023', '2024-25'],
+                    datasets: [{
+                        label: 'Import Volume (Million Tonnes)',
+                        data: [2.8, 3.0, 3.1, 3.8, 3.5, 5.47],
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Supplier Chart
+            const supplierCtx = document.getElementById('soybeanSupplierChart').getContext('2d');
+            new Chart(supplierCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Argentina', 'Brazil', 'Nepal', 'Russia', 'Netherlands', 'USA'],
+                    datasets: [{
+                        data: [53, 21, 14, 6, 4, 2],
+                        backgroundColor: [
+                            '#3B82F6',
+                            '#14B8A6',
+                            '#F59E0B',
+                            '#FB923C',
+                            '#64748B',
+                            '#94A3B8'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMaps();
+            initializeCharts();
+        });
+    </script>
+</body>
+</html>
