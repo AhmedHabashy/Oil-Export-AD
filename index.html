@@ -774,6 +774,27 @@
             max-height: 450px;
         }
         
+        .chart-container.wide {
+            max-height: 500px;
+            padding: 32px;
+        }
+        
+        .chart-container.wide canvas {
+            max-height: 420px !important;
+            height: auto !important;
+        }
+        
+        .chart-container.donut-chart {
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            max-height: 400px;
+        }
+        
+        .chart-container.donut-chart canvas {
+            max-height: 320px !important;
+        }
+        
         .chart-container:hover {
             box-shadow: var(--shadow-lg);
         }
@@ -925,6 +946,20 @@
             
             .detail-value {
                 text-align: left;
+            }
+            
+            .chart-container.wide {
+                padding: 20px;
+                max-height: none;
+            }
+            
+            .chart-container.wide canvas {
+                max-height: none !important;
+            }
+            
+            .chart-container.donut-chart {
+                max-width: 100%;
+                padding: 20px;
             }
         }
     </style>
@@ -1347,7 +1382,8 @@
                             <p class="card-subtitle">Tanzania remains competitive even if India raises tariffs to 20-25%</p>
                         </div>
 
-                        <div class="chart-container">
+                        <div class="chart-container wide">
+                            <h4 class="chart-title">Tanzania Maintains Advantage Up to 20-25% Duty</h4>
                             <canvas id="tariffSensitivityChart"></canvas>
                         </div>
 
@@ -1438,7 +1474,8 @@
                             <h2 class="card-title">5-Year Financial Projections</h2>
                         </div>
 
-                        <div class="chart-container">
+                        <div class="chart-container wide">
+                            <h4 class="chart-title">Tanzania 5-Year Revenue & EBITDA Build-Up</h4>
                             <canvas id="financialProjectionsChart"></canvas>
                         </div>
 
@@ -1491,7 +1528,8 @@
                             <p class="card-subtitle">Landed cost in India (per tonne, CIF)</p>
                         </div>
 
-                        <div class="chart-container">
+                        <div class="chart-container wide">
+                            <h4 class="chart-title">Tanzania Cost Advantage: $64-$199/ton vs Competitors</h4>
                             <canvas id="costComparisonChart"></canvas>
                         </div>
 
@@ -1809,7 +1847,8 @@
                             <h2 class="card-title">India's Edible Oil Import Composition (2024-25)</h2>
                         </div>
 
-                        <div class="chart-container">
+                        <div class="chart-container donut-chart">
+                            <h4 class="chart-title">India Edible Oil Imports by Type (Million Tonnes)</h4>
                             <canvas id="indiaImportsChart"></canvas>
                         </div>
 
@@ -1878,7 +1917,8 @@
                             <p class="card-subtitle">5.47M tonnes in 2024-25 (+36% YoY surge)</p>
                         </div>
 
-                        <div class="chart-container">
+                        <div class="chart-container wide">
+                            <h4 class="chart-title">India Soybean Oil Import Growth (+36% YoY in 2024-25)</h4>
                             <canvas id="soybeanGrowthChart"></canvas>
                         </div>
 
@@ -1996,7 +2036,8 @@
                             <h2 class="card-title">India's Structural Deficit Through 2030</h2>
                         </div>
 
-                        <div class="chart-container">
+                        <div class="chart-container wide">
+                            <h4 class="chart-title">India Structural Deficit Through 2030 (Million Tonnes)</h4>
                             <canvas id="indiaDeficitChart"></canvas>
                         </div>
 
@@ -2397,7 +2438,8 @@
                         tension: 0.4,
                         fill: true,
                         pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointHoverRadius: 6,
+                        borderWidth: 3
                     }, {
                         label: 'Kazakhstan Landed Cost',
                         data: [1620, 1620, 1620, 1620, 1620, 1680, 1620],
@@ -2406,17 +2448,35 @@
                         tension: 0.4,
                         fill: true,
                         pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointHoverRadius: 6,
+                        borderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    aspectRatio: 2.5,
                     plugins: {
-                        title: { display: true, text: 'Tanzania Maintains Advantage Up to 20-25% Duty' }
+                        title: { display: false },
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: { 
+                                font: { size: 13 },
+                                padding: 15
+                            }
+                        }
                     },
                     scales: {
-                        y: { beginAtZero: false, title: { display: true, text: 'USD per tonne' } }
+                        y: { 
+                            beginAtZero: false, 
+                            title: { display: true, text: 'USD per tonne', font: { size: 12 } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            title: { display: true, text: 'India Import Duty Rate', font: { size: 12 } }
+                        }
                     },
                     animation: {
                         duration: 1500,
@@ -2434,19 +2494,40 @@
                         label: 'Revenue ($M)',
                         data: [49, 61, 69, 73, 77],
                         backgroundColor: '#3B82F6',
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderWidth: 0
                     }, {
                         label: 'EBITDA ($M)',
                         data: [1.8, 5.2, 7.8, 9.1, 10.2],
                         backgroundColor: '#14B8A6',
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    aspectRatio: 2.5,
                     plugins: {
-                        title: { display: true, text: 'Tanzania 5-Year Revenue & EBITDA Build-Up' }
+                        title: { display: false },
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: { 
+                                font: { size: 13 },
+                                padding: 15
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Million USD', font: { size: 12 } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
                     },
                     animation: {
                         duration: 1500,
@@ -2467,17 +2548,35 @@
                         label: 'Total Landed Cost (USD/ton)',
                         data: [769, 898, 878, 833, 968],
                         backgroundColor: ['#14B8A6', '#64748B', '#64748B', '#64748B', '#64748B'],
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    aspectRatio: 2.5,
                     plugins: {
-                        title: { display: true, text: 'Tanzania Cost Advantage: $64-$199/ton vs Competitors' }
+                        title: { display: false },
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: { 
+                                font: { size: 13 },
+                                padding: 15
+                            }
+                        }
                     },
                     scales: {
-                        y: { beginAtZero: false }
+                        y: { 
+                            beginAtZero: false,
+                            min: 700,
+                            title: { display: true, text: 'USD per tonne (CIF India)', font: { size: 12 } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
                     },
                     animation: {
                         duration: 1500,
@@ -2496,7 +2595,9 @@
                     labels: ['Palm Oil', 'Sunflower', 'Soybean', 'RBD Palmolein', 'Others'],
                     datasets: [{
                         data: [7.01, 3.5, 5.47, 1.9, 0.12],
-                        backgroundColor: ['#64748B', '#F59E0B', '#14B8A6', '#3B82F6', '#8B5CF6']
+                        backgroundColor: ['#64748B', '#F59E0B', '#14B8A6', '#3B82F6', '#8B5CF6'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
@@ -2505,9 +2606,7 @@
                     aspectRatio: 2,
                     plugins: {
                         title: { 
-                            display: true, 
-                            text: 'India Edible Oil Imports by Type (Million Tonnes)',
-                            font: { size: 14 }
+                            display: false
                         },
                         legend: { 
                             position: 'right',
@@ -2544,17 +2643,34 @@
                         pointHoverRadius: 7,
                         pointBackgroundColor: '#14B8A6',
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 2
+                        pointBorderWidth: 2,
+                        borderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    aspectRatio: 2.5,
                     plugins: {
-                        title: { display: true, text: 'India Soybean Oil Import Growth (+36% YoY in 2024-25)' }
+                        title: { display: false },
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: { 
+                                font: { size: 13 },
+                                padding: 15
+                            }
+                        }
                     },
                     scales: {
-                        y: { beginAtZero: true, title: { display: true, text: 'Million Tonnes' } }
+                        y: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: 'Million Tonnes', font: { size: 12 } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
                     },
                     animation: {
                         duration: 2000,
@@ -2572,24 +2688,46 @@
                         label: 'Consumption',
                         data: [25.5, 26.5, 27.5, 29],
                         backgroundColor: '#3B82F6',
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderWidth: 0
                     }, {
                         label: 'Production',
                         data: [11.5, 12, 13, 14.5],
                         backgroundColor: '#14B8A6',
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderWidth: 0
                     }, {
                         label: 'Import Requirement',
                         data: [14, 14.5, 14.5, 14.5],
                         backgroundColor: '#FB923C',
-                        borderRadius: 6
+                        borderRadius: 6,
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    aspectRatio: 2.5,
                     plugins: {
-                        title: { display: true, text: 'India Structural Deficit Through 2030 (Million Tonnes)' }
+                        title: { display: false },
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: { 
+                                font: { size: 13 },
+                                padding: 15
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Million Tonnes', font: { size: 12 } },
+                            grid: { color: 'rgba(0,0,0,0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
                     },
                     animation: {
                         duration: 1500,
